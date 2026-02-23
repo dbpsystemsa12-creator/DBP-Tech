@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DBP Tech Hub Pro | Elite Developer Suite</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.2/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* ==========================================================================
+           1. ELITE DESIGN SYSTEM (Variables & Theming)
+           ========================================================================== */
+        :root {
+            /* Branding */
+            --bg-grad: linear-gradient(234deg, #000000, #2b2b2b);
+            --primary: #8b5cf6;
+            --primary-hover: #7c3aed;
+            --primary-glow: rgba(139, 92, 246, 0.4);
+            
+            /* Status Accents */
+            --accent: #0ea5e9;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            
+            /* Glassmorphism Surfaces */
+            --surface-1: rgba(15, 15, 18, 0.85);
+            --surface-2: rgba(30, 30, 35, 0.6);
+            --surface-border: rgba(255, 255, 255, 0.08);
+            
+            /* Input & Editor Surfaces */
+            --input-bg: rgba(0, 0, 0, 0.5);
+            --input-border: rgba(255, 255, 255, 0.15);
+            --input-focus: rgba(139, 92, 246, 0.3);
+            
+            /* Typography */
+            --text-main: #f8fafc;
+            --text-muted: #8b949e;
+            --font-ui: 'Inter', system-ui, -apple-system, sans-serif;
+            --font-code: 'Fira Code', 'JetBrains Mono', 'Consolas', monospace;
+            
+            /* Geometry & Motion */
+            --radius-xl: 16px;
+            --radius-lg: 12px;
+            --radius-md: 8px;
+            --radius-sm: 4px;
+            --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-smooth: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* ==========================================================================
+           2. RESET & APP SHELL
+           ========================================================================== */
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        ::selection { background: var(--primary); color: white; }
+
+        body {
+            background: var(--bg-grad);
+            color: var(--text-main);
+            font-family: var(--font-ui);
+            height: 100vh;
+            overflow: hidden; /* Lock body for IDE feel */
+            display: flex;
+            flex-direction: column;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Custom IDE Scrollbars */
+        ::-webkit-scrollbar { width: 10px; height: 10px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-left: 1px solid var(--surface-border); }
+        ::-webkit-scrollbar-thumb { background: rgba(139, 92, 246, 0.3); border: 2px solid transparent; background-clip: padding-box; border-radius: 8px; }
+        ::-webkit-scrollbar-thumb:hover { background-color: var(--primary); }
+
+        /* ==========================================================================
+           3. TOP NAVIGATION BAR
+           ========================================================================== */
+        .topbar {
+            height: 65px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            background: var(--surface-1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--surface-border);
+            z-index: 100;
+        }
+
+        .logo {
+            font-weight: 900; font-size: 1.5rem; letter-spacing: -0.5px;
+            display: flex; align-items: center; gap: 0.8rem;
+        }
+        
+        .logo i {
+            color: var(--primary);
+            text-shadow: 0 0 15px var(--primary-glow);
+        }
+
+        .cmd-trigger {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--surface-border);
+            padding: 0.5rem 1.5rem;
+            border-radius: var(--radius-md);
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            cursor: pointer;
+            transition: var(--transition-fast);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .cmd-trigger:hover {
+            background: rgba(255,255,255,0.08);
+            border-color: rgba(255,255,255,0.2);
+            color: white;
+        }
+
+        .kbd-group { display: flex; gap: 0.3rem; }
+        .kbd {
+            background: rgba(0,0,0,0.6); padding: 0.2rem 0.5rem;
+            border-radius: var(--radius-sm); font-family: var(--font-code);
+            font-size: 0.75rem; border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 2px 0 rgba(0,0,0,0.5);
+        }
+
+        /* ==========================================================================
+           4. MAIN LAYOUT (Sidebar + Workspace)
+           ========================================================================== */
+        .app-core {
+            display: flex;
+            flex: 1;
+            height: calc(100vh - 65px);
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 320px;
+            min-width: 320px;
+            background: rgba(10, 10, 12, 0.6);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid var(--surface-border);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            padding: 1.5rem 0;
+        }
+
+        .nav-category {
+            font-size: 0.7rem; text-transform: uppercase; color: var(--text-muted);
+            font-weight: 800; margin: 1.5rem 1.5rem 0.5rem 1.5rem;
+            letter-spacing: 1.5px;
+        }
+        
+        .nav-btn {
+            background: transparent; border: none; color: var(--text-main);
+            padding: 0.8rem 1.5rem; text-align: left; font-size: 0.95rem;
+            cursor: pointer; display: flex; align-items: center; gap: 1rem;
+            transition: var(--transition-fast); opacity: 0.6; position: relative;
+            font-family: var(--font-ui); font-weight: 500;
+        }
+        
+        .nav-btn i { width: 20px; text-align: center; font-size: 1rem; color: var(--text-muted); transition: var(--transition-fast); }
+        .nav-btn:hover { opacity: 1; background: rgba(255,255,255,0.03); }
+        
+        .nav-btn.active { opacity: 1; background: linear-gradient(90deg, rgba(139, 92, 246, 0.15), transparent); }
+        .nav-btn.active::before { content: ''; position: absolute; left: 0; top: 0; height: 100%; width: 3px; background: var(--primary); box-shadow: 0 0 15px var(--primary); }
+        .nav-btn.active i { color: var(--primary); }
+
+        .workspace {
+            flex: 1;
+            padding: 3rem;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+            position: relative;
+        }
+
+        /* ==========================================================================
+           5. TOOL PANELS & FORMS
+           ========================================================================== */
+        .tool-panel {
+            display: none;
+            max-width: 1600px;
+            margin: 0 auto;
+            animation: fadeUpIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .tool-panel.active { display: block; }
+
+        @keyframes fadeUpIn {
+            from { opacity: 0; transform: translateY(20px) scale(0.99); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .tool-header { margin-bottom: 2.5rem; border-bottom: 1px solid var(--surface-border); padding-bottom: 1.5rem; }
+        .tool-title { font-size: 2.8rem; font-weight: 800; letter-spacing: -1px; margin-bottom: 0.5rem; color: white; }
+        .tool-desc { color: var(--text-muted); font-size: 1.1rem; line-height: 1.6; max-width: 900px; }
+
+        .grid-1 { display: grid; grid-template-columns: 1fr; gap: 2rem; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; }
+        .grid-omni { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 1.5rem; }
+
+        .form-group { display: flex; flex-direction: column; gap: 0.8rem; position: relative; }
+        
+        .label-row { display: flex; justify-content: space-between; align-items: flex-end; }
+        label { font-size: 0.85rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 1.5px; display: flex; align-items: center; gap: 0.6rem; }
+        
+        /* Mini Toolbar Actions */
+        .mini-actions { display: flex; gap: 0.4rem; }
+        .icon-btn {
+            background: rgba(255,255,255,0.05); border: 1px solid var(--surface-border);
+            color: var(--text-muted); width: 32px; height: 32px; border-radius: var(--radius-sm);
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
+            transition: var(--transition-fast); font-size: 0.85rem;
+        }
+        .icon-btn:hover { background: var(--primary); border-color: var(--primary); color: white; }
+
+        /* Code Editors & Inputs */
+        .editor-container {
+            position: relative;
+            display: flex;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: var(--radius-md);
+            transition: var(--transition-fast);
+            overflow: hidden;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
+        }
+        
+        .editor-container:focus-within {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--input-focus), inset 0 2px 10px rgba(0,0,0,0.5);
+        }
+
+        .line-numbers {
+            width: 50px;
+            padding: 1.2rem 0;
+            background: rgba(0,0,0,0.3);
+            border-right: 1px solid rgba(255,255,255,0.05);
+            text-align: center;
+            color: rgba(255,255,255,0.2);
+            font-family: var(--font-code);
+            font-size: 0.95rem;
+            line-height: 1.6;
+            user-select: none;
+            overflow: hidden;
+        }
+
+        .input-box {
+            flex: 1;
+            padding: 1.2rem;
+            background: transparent;
+            border: none;
+            color: white;
+            font-family: var(--font-code);
+            font-size: 0.95rem;
+            line-height: 1.6;
+            resize: vertical;
+            white-space: pre;
+            overflow-wrap: normal;
+            overflow-x: auto;
+        }
+
+        .input-box:focus { outline: none; }
+        
+        textarea.input-box { min-height: 250px; }
+        
+        /* Standard inputs without line numbers */
+        input.standard-input, select.standard-input, textarea.standard-input {
+            width: 100%; padding: 1.2rem; background: var(--input-bg);
+            border: 1px solid var(--input-border); border-radius: var(--radius-md);
+            color: white; font-family: var(--font-code); font-size: 1rem;
+            transition: var(--transition-fast); resize: vertical; line-height: 1.5;
+        }
+        input.standard-input:focus, select.standard-input:focus, textarea.standard-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--input-focus); }
+        select.standard-input { appearance: none; cursor: pointer; }
+
+        /* Readonly Output Styling */
+        .editor-container.readonly, textarea.standard-input[readonly] { background: rgba(0,0,0,0.4); border-style: dashed; }
+        .editor-container.readonly .input-box, textarea.standard-input[readonly] { cursor: copy; }
+        .editor-container.readonly:hover, textarea.standard-input[readonly]:hover { border-color: var(--accent); }
+
+        /* ==========================================================================
+           6. COMPLEX COMPONENT UI (Drag/Drop, Hardware, Canvas)
+           ========================================================================== */
+        
+        /* File Drop Zone */
+        .drop-zone {
+            width: 100%; height: 220px; border: 2px dashed var(--primary);
+            border-radius: var(--radius-lg); background: rgba(139, 92, 246, 0.03);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            cursor: pointer; transition: var(--transition-fast); position: relative; overflow: hidden;
+        }
+        .drop-zone:hover, .drop-zone.dragover { background: rgba(139, 92, 246, 0.15); border-color: white; }
+        .drop-zone input[type="file"] { position: absolute; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+        .drop-zone i { font-size: 3.5rem; color: var(--primary); margin-bottom: 1rem; transition: 0.2s; }
+        .drop-zone.dragover i { transform: translateY(-10px) scale(1.1); color: white; }
+        .drop-zone p { font-size: 1.1rem; font-weight: 600; color: white; margin-bottom: 0.5rem; }
+        .drop-zone span { font-size: 0.85rem; color: var(--text-muted); }
+
+        /* Media Preview Box */
+        .media-preview {
+            width: 100%; min-height: 100px; background: rgba(0,0,0,0.3);
+            border: 1px solid var(--surface-border); border-radius: var(--radius-md);
+            display: flex; align-items: center; justify-content: center; padding: 1rem;
+            margin-top: 1rem;
+        }
+        .media-preview audio { width: 100%; outline: none; }
+        .media-preview img, .media-preview video { max-width: 100%; max-height: 300px; border-radius: 4px; }
+
+        /* Canvas Preview Background */
+        .canvas-bg {
+            background-color: white;
+            background-image: 
+                linear-gradient(45deg, #e0e0e0 25%, transparent 25%), 
+                linear-gradient(-45deg, #e0e0e0 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, #e0e0e0 75%),
+                linear-gradient(-45deg, transparent 75%, #e0e0e0 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 1rem 2rem; border: none; border-radius: var(--radius-md);
+            font-family: var(--font-ui); font-weight: 700; font-size: 1rem;
+            cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+            gap: 0.8rem; transition: var(--transition-fast);
+        }
+        .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.2); }
+        .btn-primary:hover { background: var(--primary-hover); transform: translateY(-2px); box-shadow: 0 6px 20px var(--primary-glow); }
+        .btn-secondary { background: var(--surface-2); color: white; border: 1px solid var(--surface-border); }
+        .btn-secondary:hover { background: rgba(255,255,255,0.05); border-color: white; transform: translateY(-2px); }
+
+        /* Toggle Switches */
+        .switch-wrap { display: flex; align-items: center; gap: 1rem; cursor: pointer; color: white; font-weight: 600; font-size: 0.9rem; }
+        .switch { position: relative; width: 50px; height: 26px; background: rgba(255,255,255,0.1); border-radius: 15px; transition: 0.3s; border: 1px solid var(--surface-border); }
+        .switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; background: white; border-radius: 50%; transition: 0.3s; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
+        input[type="checkbox"]:checked + .switch { background: var(--primary); border-color: var(--primary); }
+        input[type="checkbox"]:checked + .switch::after { transform: translateX(24px); }
+        input[type="checkbox"] { display: none; }
+
+        /* Range Sliders */
+        input[type="range"] { -webkit-appearance: none; width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; outline: none; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: var(--primary); cursor: pointer; box-shadow: 0 0 10px var(--primary); transition: 0.1s; }
+        input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+
+        /* ==========================================================================
+           7. COMMAND PALETTE MODAL
+           ========================================================================== */
+        .cmd-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(8px);
+            z-index: 1000; display: none; align-items: flex-start; justify-content: center;
+            padding-top: 12vh; opacity: 0; transition: opacity 0.2s;
+        }
+        .cmd-overlay.active { display: flex; opacity: 1; }
+
+        .cmd-palette {
+            width: 100%; max-width: 650px; background: rgba(15, 15, 18, 0.95);
+            border: 1px solid var(--surface-border); border-radius: var(--radius-lg);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.8), 0 0 0 1px rgba(139, 92, 246, 0.3);
+            overflow: hidden; transform: translateY(-20px) scale(0.98); transition: var(--transition-fast);
+            display: flex; flex-direction: column;
+        }
+        .cmd-overlay.active .cmd-palette { transform: translateY(0) scale(1); }
+
+        .cmd-header { padding: 1rem 1.5rem; border-bottom: 1px solid var(--surface-border); display: flex; align-items: center; gap: 1rem; }
+        .cmd-header i { color: var(--primary); font-size: 1.2rem; }
+        .cmd-input {
+            flex: 1; background: transparent; border: none; color: white;
+            font-size: 1.2rem; font-family: var(--font-ui); outline: none;
+        }
+        
+        .cmd-list { max-height: 400px; overflow-y: auto; padding: 0.5rem; }
+        .cmd-item {
+            padding: 1rem 1.2rem; display: flex; align-items: center; justify-content: space-between;
+            cursor: pointer; border-radius: var(--radius-md); color: var(--text-muted);
+            border: 1px solid transparent;
+        }
+        .cmd-item-left { display: flex; align-items: center; gap: 1rem; }
+        .cmd-item-left i { color: var(--text-muted); width: 20px; text-align: center; transition: 0.2s; }
+        .cmd-item-cat { font-size: 0.75rem; background: rgba(255,255,255,0.05); padding: 0.2rem 0.6rem; border-radius: 4px; font-weight: 600; }
+        
+        .cmd-item.selected, .cmd-item:hover { background: rgba(139, 92, 246, 0.1); border-color: var(--surface-border); color: white; }
+        .cmd-item.selected .cmd-item-left i, .cmd-item:hover .cmd-item-left i { color: var(--primary); }
+
+        /* ==========================================================================
+           8. TOAST NOTIFICATIONS
+           ========================================================================== */
+        #toast-container { position: fixed; bottom: 2rem; right: 2rem; z-index: 9999; display: flex; flex-direction: column; gap: 1rem; pointer-events: none; }
+        .toast {
+            background: rgba(15, 15, 18, 0.95); backdrop-filter: blur(10px);
+            border: 1px solid var(--surface-border); border-left: 4px solid var(--primary);
+            color: white; padding: 1.2rem 1.5rem; border-radius: var(--radius-md);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6); display: flex; align-items: center; gap: 1rem;
+            font-size: 0.95rem; font-weight: 500; min-width: 300px;
+            animation: slideInRight 0.4s var(--transition-smooth) forwards; pointer-events: auto;
+        }
+        .toast.error { border-left-color: var(--danger); }
+        .toast.warning { border-left-color: var(--warning); }
+        .toast i { font-size: 1.2rem; }
+        @keyframes slideInRight { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+    </style>
+</head>
+<body>
+
+    <header class="topbar">
+        <div class="logo">
+            <i class="fa-solid fa-code"></i>
+            <span>DBP Tech Hub Pro</span>
+        </div>
+        <div class="cmd-trigger" onclick="CmdPalette.open()">
+            <span><i class="fa-solid fa-magnifying-glass"></i> Search 30+ Tools...</span>
+            <div class="kbd-group"><span class="kbd">Ctrl</span><span class="kbd">K</span></div>
+        </div>
+        <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">
+            <i class="fa-solid fa-microchip"></i> 100% Local Execution
+        </div>
+    </header>
+
+    <div class="app-core">
+        
+        <aside class="sidebar" id="sidebar"></aside>
+
+        <main class="workspace" id="workspace">
+
+            <section id="tool-omni-enc" class="tool-panel active">
+                <div class="tool-header">
+                    <h2 class="tool-title">DBP Universal Omni-Encoder</h2>
+                    <p class="tool-desc">The ultimate evolution of the DBP Tools encoding philosophy. Paste a single string and instantly view it transcoded across every major web and hardware technology standard.</p>
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 2rem;">
+                    <div class="label-row">
+                        <label><i class="fa-solid fa-keyboard"></i> Master Input String</label>
+                        <div class="mini-actions">
+                            <div class="icon-btn" onclick="App.paste('omni-in', OmniEngine.encodeAll)" title="Paste"><i class="fa-solid fa-paste"></i></div>
+                            <div class="icon-btn" onclick="App.clear('omni-in', null, OmniEngine.encodeAll)" title="Clear"><i class="fa-solid fa-trash-can"></i></div>
+                        </div>
+                    </div>
+                    <textarea id="omni-in" class="standard-input" placeholder="Type data here to encode everywhere..." style="min-height: 120px;" oninput="OmniEngine.encodeAll()"></textarea>
+                </div>
+
+                <div class="grid-omni">
+                    <div class="form-group">
+                        <label>Base64 (Standard)</label>
+                        <textarea id="omni-b64" class="standard-input readonly" readonly onclick="App.copy('omni-b64')" style="min-height: 100px;"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Base64 (URL-Safe)</label>
+                        <textarea id="omni-b64u" class="standard-input readonly" readonly onclick="App.copy('omni-b64u')" style="min-height: 100px;"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Hexadecimal (Base16)</label>
+                        <textarea id="omni-hex" class="standard-input readonly" readonly onclick="App.copy('omni-hex')" style="min-height: 100px;"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Binary (Base2)</label>
+                        <textarea id="omni-bin" class="standard-input readonly" readonly onclick="App.copy('omni-bin')" style="min-height: 100px;"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Base32 (RFC 4648)</label>
+                        <textarea id="omni-b32" class="standard-input readonly" readonly onclick="App.copy('omni-b32')" style="min-height: 100px;"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Morse Code</label>
+                        <textarea id="omni-morse" class="standard-input readonly" readonly onclick="App.copy('omni-morse')" style="min-height: 100px;"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>URL / URI Encoded</label>
+                        <textarea id="omni-url" class="standard-input readonly" readonly onclick="App.copy('omni-url')" style="min-height: 100px;"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Unicode Escapes (\uXXXX)</label>
+                        <textarea id="omni-uni" class="standard-input readonly" readonly onclick="App.copy('omni-uni')" style="min-height: 100px;"></textarea>
+                    </div>
+                </div>
+            </section>
+
+            <section id="tool-media-b64" class="tool-panel">
+                <div class="tool-header">
+                    <h2 class="tool-title">Media to Base64 Data URI</h2>
+                    <p class="tool-desc">Drop audio files, images, or videos to generate standard Base64 Data URIs. Features an instant live DOM preview of the encoded media.</p>
+                </div>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label><i class="fa-solid fa-file-audio"></i> Upload Media File</label>
+                        <div class="drop-zone" id="media-drop">
+                            <i class="fa-solid fa-cloud-arrow-up"></i>
+                            <p>Drag & Drop Audio, Image, or Video</p>
+                            <span id="media-name">Maximum size ~20MB for browser stability</span>
+                            <input type="file" id="media-in" onchange="MediaB64.process(this.files)">
+                        </div>
+                        <div class="media-preview" id="media-player-container" style="display:none;"></div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <div class="label-row">
+                            <label><i class="fa-solid fa-code"></i> Generated Data URI</label>
+                            <div class="mini-actions"><div class="icon-btn" onclick="App.copy('media-out')" title="Copy All"><i class="fa-solid fa-copy"></i></div></div>
+                        </div>
+                        <div class="editor-container readonly" style="height: 100%;">
+                            <div class="line-numbers" id="media-ln">1</div>
+                            <textarea id="media-out" class="input-box" readonly onclick="App.copy('media-out')" placeholder="Base64 output will stream here..." onscroll="App.syncScroll('media-out', 'media-ln')"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="tool-svg-render" class="tool-panel">
+                <div class="tool-header">
+                    <h2 class="tool-title">SVG Code Rasterizer</h2>
+                    <p class="tool-desc">Paste raw scalable vector graphics (SVG) markup to instantly render it on an HTML5 Canvas. Export perfectly scaled PNGs or JPEGs locally.</p>
+                </div>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <div class="label-row">
+                            <label><i class="fa-solid fa-bezier-curve"></i> SVG Markup</label>
+                            <div class="mini-actions">
+                                <div class="icon-btn" onclick="App.paste('svg-in', SVGEngine.render)"><i class="fa-solid fa-paste"></i></div>
+                                <div class="icon-btn" onclick="App.clear('svg-in', null, SVGEngine.render)"><i class="fa-solid fa-trash-can"></i></div>
+                            </div>
+                        </div>
+                        <div class="editor-container">
+                            <div class="line-numbers" id="svg-ln">1</div>
+                            <textarea id="svg-in" class="input-box" oninput="SVGEngine.render(); App.syncScroll('svg-in', 'svg-ln');" onscroll="App.syncScroll('svg-in', 'svg-ln')" spellcheck="false" placeholder="<svg viewBox='0 0 100 100'>...</svg>"></textarea>
+                        </div>
+                        
+                        <div class="grid-2" style="margin-top: 1rem; gap: 1rem;">
+                            <div class="form-group"><label>Export Width</label><input type="number" id="svg-w" class="standard-input" value="1024" oninput="SVGEngine.render()"></div>
+                            <div class="form-group"><label>Export Height</label><input type="number" id="svg-h" class="standard-input" value="1024" oninput="SVGEngine.render()"></div>
+                        </div>
+
+                        <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                            <button class="btn btn-primary" style="flex:1;" onclick="SVGEngine.download('png')"><i class="fa-solid fa-download"></i> Download PNG</button>
+                            <button class="btn btn-secondary" style="flex:1;" onclick="SVGEngine.download('jpeg')"><i class="fa-solid fa-download"></i> Download JPEG</button>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fa-solid fa-eye"></i> Canvas Renderer</label>
+                        <div class="canvas-bg" style="height: 500px; padding: 2rem;">
+                            <canvas id="svg-canvas" style="max-width: 100%; max-height: 100%; box-shadow: 0 10px 40px rgba(0,0,0,0.5);"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="tool-img-cpp" class="tool-panel">
+                <div class="tool-header">
+                    <h2 class="tool-title">Image to C++ Array (OLED)</h2>
+                    <p class="tool-desc">Essential for robotics and embedded systems. Convert images into monochrome byte arrays for SSD1306 OLEDs and Arduino/ESP32 displays.</p>
+                </div>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label><i class="fa-solid fa-image"></i> Source Image</label>
+                        <div class="drop-zone" id="cpp-drop">
+                            <i class="fa-solid fa-microchip"></i>
+                            <p>Drop Image for C++ Processing</p>
+                            <span id="cpp-name">Supports PNG, JPEG, WebP</span>
+                            <input type="file" id="cpp-in" accept="image/*" onchange="CppEngine.process(this.files)">
+                        </div>
+                        
+                        <div class="grid-2" style="margin-top: 1rem; gap: 1rem;">
+                            <div class="form-group"><label>Display Width (px)</label><input type="number" id="cpp-w" class="standard-input" value="128" oninput="CppEngine.render()"></div>
+                            <div class="form-group"><label>Display Height (px)</label><input type="number" id="cpp-h" class="standard-input" value="64" oninput="CppEngine.render()"></div>
+                        </div>
+                        
+                        <div class="form-group" style="margin-top: 1rem;">
+                            <div class="label-row"><label>Monochrome Threshold</label><span id="cpp-th-val" style="color:var(--primary); font-family:var(--font-code);">128</span></div>
+                            <input type="range" id="cpp-th" min="0" max="255" value="128" oninput="document.getElementById('cpp-th-val').innerText=this.value; CppEngine.render()">
+                        </div>
+                        
+                        <label class="switch-wrap" style="margin-top: 1.5rem;">
+                            <input type="checkbox" id="cpp-inv" onchange="CppEngine.render()" checked>
+                            <div class="switch"></div>
+                            Invert Pixels (Required for standard I2C OLEDs)
+                        </label>
+                    </div>
+                    
+                    <div class="form-group">
+                        <div class="label-row">
+                            <label><i class="fa-solid fa-file-code"></i> C++ PROGMEM Output</label>
+                            <div class="mini-actions"><div class="icon-btn" onclick="App.copy('cpp-out')"><i class="fa-solid fa-copy"></i></div></div>
+                        </div>
+                        <div class="editor-container readonly" style="height: 100%;">
+                            <div class="line-numbers" id="cpp-ln">1</div>
+                            <textarea id="cpp-out" class="input-box" readonly onclick="App.copy('cpp-out')" placeholder="Upload an image to generate C++ code..." onscroll="App.syncScroll('cpp-out', 'cpp-ln')"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div id="dynamic-tools"></div>
+
+        </main>
+    </div>
+
+    <div class="cmd-overlay" id="cmd-overlay" onclick="if(event.target===this) CmdPalette.close()">
+        <div class="cmd-palette">
+            <div class="cmd-header">
+                <i class="fa-solid fa-chevron-right"></i>
+                <input type="text" class="cmd-input" id="cmd-input" placeholder="Type a command (e.g., 'JSON', 'Hash', 'Base64')..." autocomplete="off">
+            </div>
+            <div class="cmd-list" id="cmd-list"></div>
+        </div>
+    </div>
+
+    <div id="toast-container"></div>
+
+    <script>
+        /* ==========================================================================
+           1. CORE ARCHITECTURE & STATE MANAGEMENT
+           ========================================================================== */
+        const App = {
+            toast: (msg, type = 'success') => {
+                const con = document.getElementById('toast-container');
+                const t = document.createElement('div');
+                t.className = `toast ${type}`;
+                const icon = type === 'error' ? 'fa-circle-xmark' : type === 'warning' ? 'fa-triangle-exclamation' : 'fa-circle-check';
+                t.innerHTML = `<i class="fa-solid ${icon}" style="color:var(--${type==='success'?'primary':type});"></i> <span>${msg}</span>`;
+                con.appendChild(t);
+                setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translateY(10px)'; setTimeout(()=>t.remove(), 300); }, 3000);
+            },
+            copy: (id) => {
+                const el = document.getElementById(id);
+                if(!el.value) return App.toast('Target is empty', 'warning');
+                navigator.clipboard.writeText(el.value).then(() => {
+                    App.toast('Copied to clipboard');
+                    el.style.backgroundColor = 'rgba(139, 92, 246, 0.1)';
+                    setTimeout(() => el.style.backgroundColor = 'transparent', 300);
+                });
+            },
+            paste: async (id, cb) => {
+                try {
+                    const text = await navigator.clipboard.readText();
+                    document.getElementById(id).value = text;
+                    App.updateLineNumbers(id, id.replace('-in', '-ln'));
+                    if(cb) cb();
+                } catch(e) { App.toast('Clipboard read blocked by browser', 'error'); }
+            },
+            clear: (id, outId, cb) => {
+                document.getElementById(id).value = '';
+                if(outId) document.getElementById(outId).value = '';
+                App.updateLineNumbers(id, id.replace('-in', '-ln'));
+                if(cb) cb();
+            },
+            switchTab: (id) => {
+                document.querySelectorAll('.tool-panel').forEach(p => p.classList.remove('active'));
+                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+                
+                const t = document.getElementById(`tool-${id}`);
+                const b = document.querySelector(`.nav-btn[data-id="${id}"]`);
+                if(t) t.classList.add('active');
+                if(b) b.classList.add('active');
+                
+                document.getElementById('workspace').scrollTo({top:0});
+                CmdPalette.close();
+            },
+            updateLineNumbers: (inputId, lnId) => {
+                const input = document.getElementById(inputId);
+                const ln = document.getElementById(lnId);
+                if(!input || !ln) return;
+                const lines = input.value.split('\n').length;
+                let html = '';
+                for(let i=1; i<=Math.max(1, lines); i++) html += `${i}<br>`;
+                ln.innerHTML = html;
+            },
+            syncScroll: (inputId, lnId) => {
+                const input = document.getElementById(inputId);
+                const ln = document.getElementById(lnId);
+                if(input && ln) ln.scrollTop = input.scrollTop;
+            }
+        };
+
+        let timers = {};
+        window.debounceRun = (id, ui) => {
+            clearTimeout(timers[id]);
+            timers[id] = setTimeout(() => {
+                RunTool(id, ui);
+                App.updateLineNumbers(`${id}-in`, `${id}-ln`);
+            }, 250);
+        };
+
+        /* ==========================================================================
+           2. ENCODING ALGORITHMS (The Math)
+           ========================================================================== */
+        
+        const Encoders = {
+            b64Safe: (s) => btoa(unescape(encodeURIComponent(s))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''),
+            hexEncode: (s) => s.split('').map(c => c.charCodeAt(0).toString(16).padStart(2,'0')).join(' ').toUpperCase(),
+            hexDecode: (s) => { const hex=s.replace(/\s+/g, ''); let str=''; for(let i=0; i<hex.length; i+=2) str += String.fromCharCode(parseInt(hex.substr(i,2), 16)); return str; },
+            binEncode: (s) => s.split('').map(c => c.charCodeAt(0).toString(2).padStart(8,'0')).join(' '),
+            binDecode: (s) => s.replace(/\s+/g, '').match(/.{1,8}/g)?.map(b => String.fromCharCode(parseInt(b, 2))).join('') || '',
+            unicode: (s) => s.split('').map(c => '\\u' + c.charCodeAt(0).toString(16).padStart(4, '0')).join(''),
+            morseEncode: (s) => {
+                const map = {'a':'.-','b':'-...','c':'-.-.','d':'-..','e':'.','f':'..-.','g':'--.','h':'....','i':'..','j':'.---','k':'-.-','l':'.-..','m':'--','n':'-.','o':'---','p':'.--.','q':'--.-','r':'.-.','s':'...','t':'-','u':'..-','v':'...-','w':'.--','x':'-..-','y':'-.--','z':'--..','1':'.----','2':'..---','3':'...--','4':'....-','5':'.....','6':'-....','7':'--...','8':'---..','9':'----.','0':'-----',' ':'/'};
+                return s.toLowerCase().split('').map(c => map[c] || c).join(' ');
+            },
+            morseDecode: (s) => {
+                const map = {'.-':'a','-...':'b','-.-.':'c','-..':'d','.':'e','..-.':'f','--.':'g','....':'h','..':'i','.---':'j','-.-':'k','.-..':'l','--':'m','-.':'n','---':'o','.--.':'p','--.-':'q','.-.':'r','...':'s','-':'t','..-':'u','...-':'v','.--':'w','-..-':'x','-.--':'y','--..':'z','.----':'1','..---':'2','...--':'3','....-':'4','.....':'5','-....':'6','--...':'7','---..':'8','----.':'9','-----':'0'};
+                return s.split(' ').map(c => c==='/' ? ' ' : (map[c] || c)).join('');
+            },
+            base32Encode: (s) => {
+                const alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+                let bits = 0, val = 0, out = '';
+                for(let i=0; i<s.length; i++) {
+                    val = (val << 8) | s.charCodeAt(i); bits += 8;
+                    while(bits >= 5) { out += alpha[(val >>> (bits - 5)) & 31]; bits -= 5; }
+                }
+                if(bits > 0) out += alpha[(val << (5 - bits)) & 31];
+                while(out.length % 8 !== 0) out += '=';
+                return out;
+            }
+        };
+
+        const OmniEngine = {
+            encodeAll: () => {
+                const txt = document.getElementById('omni-in').value;
+                if(!txt) {
+                    ['b64', 'b64u', 'hex', 'bin', 'b32', 'morse', 'url', 'uni'].forEach(id => document.getElementById(`omni-${id}`).value = '');
+                    return;
+                }
+                document.getElementById('omni-b64').value = btoa(unescape(encodeURIComponent(txt)));
+                document.getElementById('omni-b64u').value = Encoders.b64Safe(txt);
+                document.getElementById('omni-hex').value = Encoders.hexEncode(txt);
+                document.getElementById('omni-bin').value = Encoders.binEncode(txt);
+                document.getElementById('omni-b32').value = Encoders.base32Encode(txt);
+                document.getElementById('omni-morse').value = Encoders.morseEncode(txt);
+                document.getElementById('omni-url').value = encodeURIComponent(txt);
+                document.getElementById('omni-uni').value = Encoders.unicode(txt);
+            }
+        };
+
+        /* ==========================================================================
+           3. COMPLEX TOOL ENGINES (SVG, Canvas, Hardware)
+           ========================================================================== */
+        
+        // --- Media to Base64 Engine ---
+        const MediaDrop = document.getElementById('media-drop');
+        MediaDrop.addEventListener('dragover', e => { e.preventDefault(); MediaDrop.style.borderColor = 'white'; });
+        MediaDrop.addEventListener('dragleave', () => MediaDrop.style.borderColor = 'var(--primary)');
+        MediaDrop.addEventListener('drop', e => { e.preventDefault(); MediaDrop.style.borderColor = 'var(--primary)'; MediaB64.process(e.dataTransfer.files); });
+
+        const MediaB64 = {
+            process: (files) => {
+                const f = files[0];
+                if(!f) return;
+                document.getElementById('media-name').innerText = `${f.name} (${(f.size/1048576).toFixed(2)} MB)`;
+                const out = document.getElementById('media-out');
+                out.value = 'Encoding file to Base64... Please wait.';
+                
+                const r = new FileReader();
+                r.onload = (e) => {
+                    const res = e.target.result;
+                    out.value = res;
+                    App.updateLineNumbers('media-out', 'media-ln');
+                    App.toast('Encoding Complete!');
+                    
+                    const player = document.getElementById('media-player-container');
+                    player.style.display = 'flex';
+                    if(f.type.startsWith('audio/')) player.innerHTML = `<audio controls src="${res}"></audio>`;
+                    else if(f.type.startsWith('video/')) player.innerHTML = `<video controls src="${res}" style="max-width:100%; max-height:300px;"></video>`;
+                    else if(f.type.startsWith('image/')) player.innerHTML = `<img src="${res}" alt="preview">`;
+                    else player.innerHTML = `<div style="color:var(--text-muted);"><i class="fa-solid fa-file"></i> URI Ready</div>`;
+                };
+                r.readAsDataURL(f);
+            }
+        };
+
+        // --- SVG Engine ---
+        const SVGEngine = {
+            render: () => {
+                const svg = document.getElementById('svg-in').value;
+                const cvs = document.getElementById('svg-canvas');
+                const ctx = cvs.getContext('2d');
+                const w = parseInt(document.getElementById('svg-w').value)||1024;
+                const h = parseInt(document.getElementById('svg-h').value)||1024;
+                
+                cvs.width = w; cvs.height = h; ctx.clearRect(0,0,w,h);
+                if(!svg.trim()) return;
+                
+                const img = new Image();
+                const safe = svg.includes('xmlns=') ? svg : svg.replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"');
+                const url = URL.createObjectURL(new Blob([safe], {type: 'image/svg+xml;charset=utf-8'}));
+                
+                img.onload = () => { ctx.drawImage(img,0,0,w,h); URL.revokeObjectURL(url); };
+                img.src = url;
+            },
+            download: (fmt) => {
+                if(!document.getElementById('svg-in').value) return App.toast('Provide SVG', 'warning');
+                const cvs = document.getElementById('svg-canvas');
+                if(fmt === 'jpeg') {
+                    const ctx = cvs.getContext('2d');
+                    ctx.globalCompositeOperation = 'destination-over';
+                    ctx.fillStyle = '#FFF'; ctx.fillRect(0,0,cvs.width,cvs.height);
+                }
+                const a = document.createElement('a'); a.href = cvs.toDataURL(`image/${fmt}`); a.download = `dbp-svg.${fmt}`; a.click();
+            }
+        };
+
+        // --- Image to C++ Array Engine ---
+        const CppDrop = document.getElementById('cpp-drop');
+        CppDrop.addEventListener('dragover', e => { e.preventDefault(); CppDrop.style.borderColor = 'white'; });
+        CppDrop.addEventListener('dragleave', () => CppDrop.style.borderColor = 'var(--primary)');
+        CppDrop.addEventListener('drop', e => { e.preventDefault(); CppDrop.style.borderColor = 'var(--primary)'; CppEngine.process(e.dataTransfer.files); });
+
+        const CppEngine = {
+            img: null,
+            process: (files) => {
+                const f = files[0]; if(!f || !f.type.startsWith('image/')) return App.toast('Upload an image', 'error');
+                document.getElementById('cpp-name').innerText = f.name;
+                const r = new FileReader();
+                r.onload = e => { const i = new Image(); i.onload = () => { CppEngine.img = i; CppEngine.render(); }; i.src = e.target.result; };
+                r.readAsDataURL(f);
+            },
+            render: () => {
+                if(!CppEngine.img) return;
+                const w = parseInt(document.getElementById('cpp-w').value)||128, h = parseInt(document.getElementById('cpp-h').value)||64;
+                const th = parseInt(document.getElementById('cpp-th').value)||128, inv = document.getElementById('cpp-inv').checked;
+                
+                const cvs = document.createElement('canvas'); cvs.width = w; cvs.height = h;
+                const ctx = cvs.getContext('2d'); ctx.fillStyle = "#FFF"; ctx.fillRect(0,0,w,h); ctx.drawImage(CppEngine.img,0,0,w,h);
+                
+                const d = ctx.getImageData(0,0,w,h).data;
+                let out = `// Generated by DBP Tech Hub Pro\n// Resolution: ${w}x${h} | Inverted: ${inv}\nconst unsigned char myBitmap[] PROGMEM = {\n  `;
+                let b = 0, idx = 0, c = 0;
+                
+                for(let y=0; y<h; y++) {
+                    for(let x=0; x<w; x++) {
+                        const i = (y*w+x)*4;
+                        let solid = (d[i]*0.299 + d[i+1]*0.587 + d[i+2]*0.114) < th;
+                        if(inv) solid = !solid;
+                        if(solid) b |= (1 << (7 - idx));
+                        idx++;
+                        if(idx === 8) { out += `0x${b.toString(16).padStart(2,'0').toUpperCase()}, `; b=0; idx=0; c++; if(c%16===0) out+=`\n  `; }
+                    }
+                }
+                if(idx !== 0) out += `0x${b.toString(16).padStart(2,'0').toUpperCase()}, `;
+                document.getElementById('cpp-out').value = out.replace(/, $/, '') + `\n};`;
+                App.updateLineNumbers('cpp-out', 'cpp-ln');
+            }
+        };
+
+        /* ==========================================================================
+           4. DYNAMIC TOOL FACTORY (VS Code Architecture)
+           ========================================================================== */
+        
+        const Registry = [
+            // Decoding & Decoding Specific Tools
+            { id: 'hex-dec', name: 'Hexadecimal Decoder', cat: 'Decoders', icon: 'fa-hashtag', tags: 'base16 hex text read', ui: 'io', 
+              process: v => Encoders.hexDecode(v) },
+            { id: 'bin-dec', name: 'Binary Decoder', cat: 'Decoders', icon: 'fa-0', tags: 'base2 binary text read', ui: 'io', 
+              process: v => Encoders.binDecode(v) },
+            { id: 'morse-dec', name: 'Morse Code Decoder', cat: 'Decoders', icon: 'fa-wave-square', tags: 'radio dash dot', ui: 'io', 
+              process: v => Encoders.morseDecode(v) },
+            
+            // Native GZIP Compression API
+            { id: 'gzip-enc', name: 'Gzip Compressor (Native)', cat: 'Data Compression', icon: 'fa-file-zipper', tags: 'deflate compress base64 zip', ui: 'io-async', 
+              process: async (v) => { 
+                  try {
+                      const stream = new Blob([v]).stream().pipeThrough(new CompressionStream('gzip'));
+                      const res = await new Response(stream).arrayBuffer();
+                      return btoa(String.fromCharCode(...new Uint8Array(res))); 
+                  } catch(e) { return "Browser doesn't support CompressionStream API"; }
+              }},
+            { id: 'gzip-dec', name: 'Gzip Decompressor (Native)', cat: 'Data Compression', icon: 'fa-file-zipper', tags: 'inflate decompress base64 zip', ui: 'io-async', 
+              process: async (v) => { 
+                  try {
+                      const bin = atob(v); const ui8 = new Uint8Array(bin.length);
+                      for(let i=0; i<bin.length; i++) ui8[i] = bin.charCodeAt(i);
+                      const stream = new Blob([ui8]).stream().pipeThrough(new DecompressionStream('gzip'));
+                      return await new Response(stream).text();
+                  } catch(e) { return "Invalid GZIP Base64 String"; }
+              }},
+
+            // Code Formatters
+            { id: 'json-fmt', name: 'JSON Prettifier & Validator', cat: 'Code Formatting', icon: 'fa-brackets-curly', tags: 'beautify object syntax', ui: 'io', 
+              process: v => JSON.stringify(JSON.parse(v), null, 4) },
+            { id: 'json-min', name: 'JSON Minifier', cat: 'Code Formatting', icon: 'fa-compress', tags: 'compress shrink payload', ui: 'io', 
+              process: v => JSON.stringify(JSON.parse(v)) },
+            
+            // Cryptography & Auth
+            { id: 'jwt-dec', name: 'JWT Token Decoder', cat: 'Security & Auth', icon: 'fa-passport', tags: 'json web token payload', ui: 'io', 
+              process: v => { const p=v.split('.'); return `====== HEADER ======\n${JSON.stringify(JSON.parse(atob(p[0].replace(/-/g,'+').replace(/_/g,'/'))),null,4)}\n\n====== PAYLOAD ======\n${JSON.stringify(JSON.parse(atob(p[1].replace(/-/g,'+').replace(/_/g,'/'))),null,4)}`; } },
+            { id: 'sha256', name: 'SHA-256 Hasher', cat: 'Security & Auth', icon: 'fa-shield-halved', tags: 'crypto secure hash generator', ui: 'io-async', 
+              process: async v => { const h=await crypto.subtle.digest('SHA-256', new TextEncoder().encode(v)); return Array.from(new Uint8Array(h)).map(b=>b.toString(16).padStart(2,'0')).join(''); } },
+
+            // Custom Integrated QR
+            { id: 'qr-gen', name: 'QR Code Generator', cat: 'Utilities', icon: 'fa-qrcode', tags: 'barcode link scan visual', ui: 'custom',
+              html: `
+                <div class="grid-2">
+                    <div class="form-group"><label>Input URL or Text</label><textarea id="qr-in" class="input-box" oninput="QREngine.gen()"></textarea></div>
+                    <div class="form-group" style="align-items:center;">
+                        <label>Generated QR Code</label>
+                        <div id="qr-out" style="background:white; padding:1.5rem; border-radius:var(--radius-lg); margin-top:1rem; box-shadow:0 10px 30px rgba(0,0,0,0.5);"></div>
+                    </div>
+                </div>
+              `
+            }
+        ];
+
+        const QREngine = {
+            instance: null,
+            gen: () => {
+                const text = document.getElementById('qr-in').value;
+                const out = document.getElementById('qr-out');
+                out.innerHTML = '';
+                if(text) QREngine.instance = new QRCode(out, {text: text, width: 220, height: 220, colorDark: "#000", colorLight: "#FFF"});
+            }
+        };
+
+        window.RunTool = async (id, type) => {
+            const t = Registry.find(x => x.id === id);
+            const inn = document.getElementById(`${id}-in`), out = document.getElementById(`${id}-out`);
+            if(!inn || !t) return;
+            try {
+                if(type === 'io') { if(!inn.value.trim()){ out.value=''; return; } out.value = t.process(inn.value); }
+                else if(type === 'io-async') { if(!inn.value.trim()){ out.value=''; return; } out.value = await t.process(inn.value); }
+                if(out) App.updateLineNumbers(`${id}-out`, `${id}-out-ln`);
+            } catch(e) { out.value = `Error Processing Data.\n\n${e.message}`; }
+        };
+
+        const BuildWorkspace = () => {
+            const nav = document.getElementById('sidebar');
+            const ws = document.getElementById('dynamic-tools');
+            
+            // Hardcoded Complex Tools Sidebar
+            let navHtml = `
+                <div class="nav-category">The Omniverse</div>
+                <button class="nav-btn active" data-id="omni-enc" onclick="App.switchTab('omni-enc')"><i class="fa-solid fa-code-compare"></i> Omni-Encoder Engine</button>
+                <div class="nav-category">Media & Visual Engine</div>
+                <button class="nav-btn" data-id="media-b64" onclick="App.switchTab('media-b64')"><i class="fa-solid fa-file-audio"></i> Media to Base64</button>
+                <button class="nav-btn" data-id="svg-render" onclick="App.switchTab('svg-render')"><i class="fa-solid fa-bezier-curve"></i> SVG Rasterizer</button>
+                <div class="nav-category">Hardware / Microcontrollers</div>
+                <button class="nav-btn" data-id="img-cpp" onclick="App.switchTab('img-cpp')"><i class="fa-solid fa-microchip"></i> Img to C++ Array (OLED)</button>
+            `;
+
+            const categories = [...new Set(Registry.map(t => t.cat))];
+            
+            categories.forEach(cat => {
+                navHtml += `<div class="nav-category">${cat}</div>`;
+                Registry.filter(t => t.cat === cat).forEach(tool => {
+                    navHtml += `<button class="nav-btn" data-id="${tool.id}" onclick="App.switchTab('${tool.id}')"><i class="fa-solid ${tool.icon}"></i> ${tool.name}</button>`;
+                    
+                    let html = `<section id="tool-${tool.id}" class="tool-panel"><div class="tool-header"><h2 class="tool-title">${tool.name}</h2><p class="tool-desc">Top-tier local execution environment.</p></div>`;
+
+                    if(tool.ui === 'custom') {
+                        html += tool.html;
+                    } else if (tool.ui.startsWith('io')) {
+                        html += `
+                            <div class="grid-2">
+                                <div class="form-group">
+                                    <div class="label-row"><label>Input Editor</label>
+                                        <div class="mini-actions">
+                                            <div class="icon-btn" onclick="App.paste('${tool.id}-in', ()=>RunTool('${tool.id}', '${tool.ui}'))" title="Paste"><i class="fa-solid fa-paste"></i></div>
+                                            <div class="icon-btn" onclick="App.clear('${tool.id}-in', '${tool.id}-out')" title="Clear"><i class="fa-solid fa-trash-can"></i></div>
+                                        </div>
+                                    </div>
+                                    <div class="editor-container">
+                                        <div class="line-numbers" id="${tool.id}-ln">1</div>
+                                        <textarea id="${tool.id}-in" class="input-box" placeholder="Write or paste here..." oninput="debounceRun('${tool.id}', '${tool.ui}')" onscroll="App.syncScroll('${tool.id}-in', '${tool.id}-ln')"></textarea>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="label-row"><label>Output Buffer</label><div class="icon-btn" onclick="App.copy('${tool.id}-out')" title="Copy Result"><i class="fa-solid fa-copy"></i></div></div>
+                                    <div class="editor-container readonly" style="height:100%;">
+                                        <div class="line-numbers" id="${tool.id}-out-ln">1</div>
+                                        <textarea id="${tool.id}-out" class="input-box" readonly onclick="App.copy('${tool.id}-out')" placeholder="Waiting for input..." onscroll="App.syncScroll('${tool.id}-out', '${tool.id}-out-ln')"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    html += `</section>`;
+                    ws.insertAdjacentHTML('beforeend', html);
+                });
+            });
+            nav.innerHTML = navHtml;
+        };
+
+        /* ==========================================================================
+           5. COMMAND PALETTE (Omni-Search)
+           ========================================================================== */
+        let cmdIdx = -1;
+        const CmdPalette = {
+            open: () => {
+                const ov = document.getElementById('cmd-overlay');
+                const inp = document.getElementById('cmd-input');
+                ov.classList.add('active'); inp.value = '';
+                CmdPalette.filter(); setTimeout(() => inp.focus(), 50);
+            },
+            close: () => document.getElementById('cmd-overlay').classList.remove('active'),
+            filter: () => {
+                const term = document.getElementById('cmd-input').value.toLowerCase();
+                const list = document.getElementById('cmd-list');
+                list.innerHTML = '';
+                
+                let db = [
+                    {id:'omni-enc', name:'Universal Omni-Encoder', icon:'fa-code-compare', cat:'The Omniverse'},
+                    {id:'media-b64', name:'Media to Base64 Engine', icon:'fa-file-audio', cat:'Media'},
+                    {id:'svg-render', name:'SVG Rasterizer', icon:'fa-bezier-curve', cat:'Media'},
+                    {id:'img-cpp', name:'Image to C++ Array (PROGMEM)', icon:'fa-microchip', cat:'Hardware'},
+                    ...Registry
+                ];
+
+                const matches = db.filter(t => t.name.toLowerCase().includes(term) || (t.tags && t.tags.toLowerCase().includes(term)));
+                if(matches.length === 0) list.innerHTML = `<div style="padding:1rem; color:var(--text-muted); text-align:center;">No tools found matching '${term}'</div>`;
+
+                matches.forEach((m, i) => {
+                    const el = document.createElement('div');
+                    el.className = `cmd-item ${i===0?'selected':''}`;
+                    el.innerHTML = `<div class="cmd-item-left"><i class="fa-solid ${m.icon}"></i> <span>${m.name}</span></div><span class="cmd-item-cat">${m.cat}</span>`;
+                    el.onclick = () => App.switchTab(m.id);
+                    list.appendChild(el);
+                });
+                cmdIdx = matches.length > 0 ? 0 : -1;
+            },
+            keydown: (e) => {
+                const items = document.querySelectorAll('.cmd-item');
+                if(!items.length) return;
+                if(e.key === 'ArrowDown') { e.preventDefault(); cmdIdx = (cmdIdx + 1) % items.length; }
+                else if(e.key === 'ArrowUp') { e.preventDefault(); cmdIdx = (cmdIdx - 1 + items.length) % items.length; }
+                else if(e.key === 'Enter') { e.preventDefault(); if(cmdIdx >= 0) items[cmdIdx].click(); }
+                else if(e.key === 'Escape') { e.preventDefault(); CmdPalette.close(); }
+
+                items.forEach((item, i) => {
+                    if(i === cmdIdx) { item.classList.add('selected'); item.scrollIntoView({block: 'nearest'}); }
+                    else item.classList.remove('selected');
+                });
+            }
+        };
+
+        document.getElementById('cmd-input').addEventListener('input', CmdPalette.filter);
+        document.getElementById('cmd-input').addEventListener('keydown', CmdPalette.keydown);
+        
+        document.addEventListener('keydown', (e) => {
+            if((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); CmdPalette.open(); }
+            if(e.key === 'Escape') CmdPalette.close();
+        });
+
+        // Initialize Suite
+        document.addEventListener('DOMContentLoaded', () => {
+            BuildWorkspace();
+            App.switchTab('omni-enc'); // Default view is the new Omni-Encoder
+        });
+
+    </script>
+</body>
+</html>
